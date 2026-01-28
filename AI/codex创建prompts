@@ -1,0 +1,1 @@
+请帮我把 Superpowers 集成成一个会话级 Prompt，让我只需要在对话框输入 `/prompts:superpowers <任务>` 就能启用并在本对话后续自动使用所有 superpowers skills
