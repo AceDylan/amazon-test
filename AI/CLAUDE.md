@@ -1,101 +1,135 @@
-# CLAUDE.md
+# CCG 高级协作工作流配置 (Enhanced Hybrid Workflow)
 
-## 1. Interaction Guidelines (用户交互准则)
+## 1. 核心交互原则 (Interaction Guidelines)
 
-这些规则优先级最高，用于控制交互流程和代码变更的安全性。
+**最高优先级规则**：
 
-* **0. 需求澄清与风暴 (Brainstorm First)**：在深入技术细节前，结合用户输入和 `/superpowers:brainstorm` 彻底理清需求边界。
-* **1. 计划先行 (Planning & Validation)**：利用 `/superpowers:write-plan` 起草计划，但**必须**经过 Codex 的技术校验后，才能向用户汇报。
-* **2. 严禁自动执行 (No Auto-Execution)**：**严禁使用 `/superpowers:execute-plan**`。我们只使用 Superpowers 的思考能力，不使用其行动能力。
-* **3. 等待批准 (Wait for Approval)**：在用户明确批准最终计划之前，**严禁**执行 `Edit` 或 `Bash` 命令（只读命令除外）。
-* **4. 保持质疑 (Be Critical)**：Codex 是技术顾问，Superpowers 是流程辅助，你才是最终责任人。必须对所有输出进行逻辑校验。
-
----
-
-## 2. Core Instruction for Hybrid Workflow (Codex + Superpowers 协作流)
-
-在任何时刻，你必须严格执行以下混合工作流，将 Superpowers 的规划能力与 Codex 的深度技术分析相结合。
-
-**步骤 1：需求获取与头脑风暴 (Phase 1: Discovery & Brainstorming)**
-
-1. 初步阅读用户请求。
-2. **执行 `/superpowers:brainstorm**`：利用此工具挖掘被忽略的边缘情况、架构选择和潜在风险。
-3. 根据风暴结果，向用户提出关键问题，直到需求完全清晰。
-
-**步骤 2：计划起草与 Codex 校验 (Phase 2: Planning & Validation)**
-
-1. **执行 `/superpowers:write-plan**`：基于澄清后的需求，生成一份详细的任务清单（Draft Plan）。
-2. **调用 `codex` 工具**：
-* **Input**：将“用户原始需求”、“Brainstorm 的结论”以及“Draft Plan”全部发送给 Codex。
-* **Instruction**：要求 Codex 对该计划进行**技术可行性校验**，补充遗漏的技术细节，并评估潜在风险。
-* *参数提示：使用 `sandbox="read-only"*`。
+1. **计划先行 (Plan & Validate)**：禁止在未经过 Codex/Gemini 技术校验且未获用户批准的情况下直接编写代码。
+2. **代码主权 (Code Sovereignty)**：
+* **Codex/Gemini** (通过 CLI)：仅负责分析、架构设计、生成 Diff/原型、Review。**禁止**直接操作文件系统进行写操作。
+* **Claude** (当前模型)：负责最终代码的合成与写入 (`Edit` 工具)。你必须参考后端模型的建议，编写生产级代码。
 
 
-
-**步骤 3：方案汇报与审批 (Phase 3: Proposal)**
-结合 Codex 的校验反馈，修正计划，并通过 `AskUserQuestion` 向用户汇报最终的**实施方案**。
-*只有在用户回复“同意”后，才能进入编码阶段。*
-
-**步骤 4：获取原型 (Phase 4: Prototyping)**
-*从这里开始，禁止使用 Superpowers，完全切换回 Codex 模式。*
-在实施具体编码任务前，**必须向 Codex 索要代码实现原型**。
-
-* 参数要求：`sandbox="read-only"`
-* 指令要求：要求 Codex **仅给出 unified diff patch**，严禁对代码做任何真实修改。
-
-**步骤 5：代码重写与实施 (Phase 5: Implementation)**
-获取 Codex 的 patch 后，你**只能以此为逻辑参考**。你必须运用你的编程能力，**重新编写**代码，确保形成企业生产级别、可读性极高、可维护性极高的代码，然后使用 `Edit` 工具实施修改。
-
-**步骤 6：代码审查 (Phase 6: Review)**
-完成编码后，**必须立即使用 Codex review 代码改动**，检查需求完成程度和潜在 Bug。
+3. **上下文极简 (Minimal Context)**：严格遵守文件读取策略，避免 Token 浪费。
 
 ---
 
-## 3. Codex Tool Invocation Specification
+## 2. 工作流阶段 (Phased Workflow)
 
-### 1. 工具概述
+在处理复杂任务时，必须严格遵循以下阶段：
 
-codex MCP 提供了一个工具 `codex`，用于执行 AI 辅助的编码任务。
+### Phase 1: 需求增强与风暴 (Discovery)
 
-### 2. 工具参数
-
-**必选参数：**
-
-* `PROMPT` (string): 发送给 codex 的任务指令
-* `cd` (Path): codex 执行任务的工作目录根路径
-
-**可选参数：**
-
-* `sandbox` (string): 沙箱策略，可选值：
-* `"read-only"` (默认): **分析、校验计划、获取原型阶段务必使用此模式**
-* `"workspace-write"`: 允许在工作区写入
+* **触发条件**：用户发送模糊需求。
+* **执行动作**：
+1. 调用 `mcp__ace-tool__enhance_prompt` 将需求转化为结构化任务。
+2. 若需求仍有缺漏，向用户输出引导性问题列表，直至边界清晰。
 
 
-* `SESSION_ID` (UUID | null): 用于保持上下文连贯，默认为 None
-* `skip_git_repo_check` (boolean): 默认 False
-* `return_all_messages` (boolean): 默认 False
 
-### 3. 调用规范 (最佳实践)
+### Phase 2: 上下文全量检索 (Context Retrieval)
 
-1. **会话保持**：在 Phase 2 (校验) 到 Phase 6 (审查) 的过程中，尽量复用 `SESSION_ID` 以保持上下文。
-2. **安全隔离**：在获取代码思路时，始终使用 `sandbox="read-only"`。
+* **执行原则**：禁止基于假设 (Assumption) 回答。
+* **工具调用**：调用 `mcp__ace-tool__search_context`。
+* **文件读取策略 (File Reading Strategy)**：
+* **侦察**：先用 Grep/Tree 了解结构。
+* **精准打击**：使用 `read_file` 时**必须指定** `offset` 和 `limit` (建议单次 < 300 行)。
+* **禁止**：全量读取无关的大文件。
 
 
-## 4. File Reading Strategy (文件读取策略)
 
-**强制规则**：每次调用 Read 工具时 **必须** 指定 `offset` 和 `limit` 参数，禁止使用默认值。
+### Phase 3: 计划与校验 (Planning & Validation)
 
-### 参数要求
+* **动作**：
+1. 起草 Draft Plan。
+2. **双模校验**：使用 CLI 调用后端模型（Codex 查逻辑，Gemini 查前端/交互）对计划进行“可行性校验”。
+3. **用户审批**：向用户汇报最终实施方案（含风险评估），**获得“同意”后方可进入下一阶段**。
 
-| 参数 | 要求 | 说明 |
-| --- | --- | --- |
-| `offset` | **必须指定** | 起始行号（从 0 开始） |
-| `limit` | **必须指定** | 读取行数，单次不超过 500 行 |
 
-### 读取流程
 
-1. **侦察 (Recon)**：先用 Grep 了解文件结构，或定位目标关键词行号。
-2. **精准打击 (Precision Strike)**：使用 offset + limit 精确读取目标区域。
-3. **扩展 (Expansion)**：如果需要更多上下文，再调整 offset 继续读取。
+### Phase 4: 原型获取 (Prototyping)
 
-> **目标**：保持上下文精准、最小化。如果不遵守，工具调用将被 Hook 拦截。
+* **动作**：调用后端模型获取实现原型。
+* **指令要求**：要求后端模型**仅给出 unified diff patch** 或 **伪代码**，严禁其尝试直接修改。
+
+### Phase 5: 实施与审查 (Implementation & Review)
+
+* **实施**：Claude 参考 Phase 4 的原型，重写为高质量代码并执行 `Edit`。
+* **审查**：代码变更后，立即再次调用 CLI 让后端模型进行 Code Review。
+
+---
+
+## 3. 多模型协作调用规范 (CLI Specs)
+
+所有后端能力通过 `codeagent-wrapper` 调用。
+
+### 通用调用策略
+
+1. **会话复用**：
+* 首次调用获取 `SESSION_ID`。
+* 后续相关任务必须使用 `resume <SESSION_ID>` 保持上下文连贯。
+
+
+2. **并行加速**：
+* 对于独立的分析任务（如同时分析前端和后端），必须使用 `run_in_background: true`。
+* 使用 `TaskOutput` 阻塞等待所有结果返回。
+
+
+
+### 后端任务 (Codex)
+
+* **适用场景**：逻辑实现、算法、数据库、API、Plan 校验、Code Review。
+* **调用模板**：
+```bash
+# 新会话
+codeagent-wrapper --backend codex - [工作目录] <<'EOF'
+[Context]: <传入当前已知信息>
+[Task]: <具体的分析/校验/原型生成任务>
+[Constraint]: Output unified diff only. Do NOT write files.
+EOF
+
+# 复用会话
+codeagent-wrapper --backend codex resume <SESSION_ID> - [工作目录] <<'EOF' ... EOF
+
+```
+
+
+
+### 前端任务 (Gemini)
+
+* **适用场景**：UI 组件、CSS、响应式布局、前端交互逻辑。
+* **调用模板**：
+```bash
+codeagent-wrapper --backend gemini - [工作目录] <<'EOF' ... EOF
+
+```
+
+
+
+---
+
+## 4. 工具使用清单
+
+### 提示词增强
+
+`mcp__ace-tool__enhance_prompt`
+
+* **作用**：将自然语言转化为结构化、无歧义的执行清单。
+
+### 上下文检索
+
+`mcp__ace-tool__search_context`
+
+* **策略**：语义查询 (Where/What/How)，确保获取相关类、函数的完整签名。
+
+### 核心执行
+
+`Bash` (用于执行 codeagent-wrapper)
+`Edit` (仅限 Claude 使用，用于最终代码写入)
+
+---
+
+## 5. 异常处理
+
+* **上下文不足**：若检索后信息仍不全，触发递归检索。
+* **模型冲突**：若 Codex 和 Gemini 给出的建议冲突，以 Codex (逻辑优先) 或 Gemini (视觉优先) 为准，或向用户呈现冲突点供决策。
