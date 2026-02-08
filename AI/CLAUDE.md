@@ -2,7 +2,7 @@
 
 ## 1. Prompt 增强 (每次对话自动触发)
 **执行时机**：用户发送消息时
-**工具调用**：调用 /superpowers:brainstorm 彻底理清需求边界
+**工具调用**：调用 /superpowers:brainstorming 彻底理清需求边界
 **作用**：将模糊需求转化为结构化、可执行的任务描述，返回中文
 
 ## 2. 上下文全量检索 (生成代码前必须执行)
@@ -20,7 +20,7 @@
 ## 3. 工作流执行原则
 
 1. 先检索，后生成：永远不要在没有调用 codebase-retrieval 的情况下编写代码
-2. 增强需求：对于复杂任务，先调用 /superpowers:brainstorm 彻底理清需求边界
+2. 增强需求：对于复杂任务，先调用 /superpowers:brainstorming 彻底理清需求边界
 3. 智能路由：根据任务类型自动选择 Codex/Gemini/Claude
 4. 交叉验证：关键决策使用双模型并行分析
 5. 代码主权：Codex/Gemini 仅负责分析、规划、审查，禁止直接修改文件；所有代码实现由 Claude 完成
