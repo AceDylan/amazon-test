@@ -19,7 +19,7 @@
 
 ## 3. 工作流执行原则
 
-1. 先检索，后生成：永远不要在没有调用 search_context 的情况下编写代码
+1. 先检索，后生成：永远不要在没有调用 codebase-retrieval 的情况下编写代码
 2. 增强需求：对于复杂任务，先调用 /superpowers:brainstorm 彻底理清需求边界
 3. 智能路由：根据任务类型自动选择 Codex/Gemini/Claude
 4. 交叉验证：关键决策使用双模型并行分析
