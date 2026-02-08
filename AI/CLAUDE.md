@@ -2,12 +2,12 @@
 
 ## 1. Prompt 增强 (每次对话自动触发)
 **执行时机**：用户发送消息时
-**工具调用**：调用 mcp__ace-tool__enhance_prompt
+**工具调用**：调用 mcp__ace-tool__enhance_prompt（如果失败使用 mcp:contextweaver）
 **作用**：将模糊需求转化为结构化、可执行的任务描述，返回中文
 
 ## 2. 上下文全量检索 (生成代码前必须执行)
 **执行时机**：在生成任何建议或代码之前
-**工具调用**：调用 mcp__ace-tool__search_context
+**工具调用**：调用 mcp__ace-tool__search_context（如果失败使用 mcp:contextweaver）
 
 **检索策略**：
 - 禁止基于假设 (Assumption) 回答
