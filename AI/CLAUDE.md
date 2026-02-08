@@ -1,13 +1,13 @@
 # CCG 工作流增强配置
 
-## 1. Prompt 增强 (每次对话自动触发)
-**执行时机**：用户发送消息时
+## 1. Prompt 增强
+**执行时机**：当用户需求涉及实现/修改代码，且需求边界模糊时
 **工具调用**：调用 /superpowers:brainstorming 彻底理清需求边界
 **作用**：将模糊需求转化为结构化、可执行的任务描述，返回中文
 
 ## 2. 上下文全量检索 (生成代码前必须执行)
 **执行时机**：在生成任何建议或代码之前
-**工具调用**：调用 mcp__contextweaver__codebase-retrieval
+**工具调用**：调用 mcp__contextweaver__codebase-retrieval。若 contextweaver 不可用，降级使用 Grep + Glob 组合检索
 
 **检索策略**：
 - 禁止基于假设 (Assumption) 回答
