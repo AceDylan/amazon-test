@@ -122,15 +122,6 @@
 ├─ 确认高风险操作 → mcp__ask-user-questions-tool__confirm_action
 └─ 简单确认 → AskUserQuestion (默认工具)
 
-
-### 🔧 特殊场景
-
-特殊需求？
-├─ 飞书文档读取 → mcp__feishu-mcp__docx_v1_document_rawContent
-├─ 跨会话记忆 → mcp__server-memory__* (仅用户要求时)
-└─ 任务追踪 (≥3 步骤, >10 分钟) → TodoWrite
-
-
 ---
 
 ### 🎯 快速决策指南
