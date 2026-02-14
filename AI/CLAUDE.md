@@ -17,19 +17,22 @@
 
 ### 1.0 能力探测（先执行）
 每轮先探测工具可用性并记录：
-
-- `mcp__contextweaver__codebase-retrieval`
+- `mcp__ace-tool__enhance_prompt`
+- `mcp__ace-tool__search_context`
 - `/superpowers:brainstorm`（降级路径）
 
 若工具不可用，不报错中断，直接按降级策略继续。
 
 ### 1.1 Prompt 增强（用户消息到达即触发）
-- 首选：如果需求不清晰，调用 `/superpowers:brainstorm` 补充混淆需求
-- 降级2：手工模板增强（见附录 A）
+**执行时机**：用户发送消息时
+**工具调用**：调用 mcp__ace-tool__enhance_prompt
+**作用**：将模糊需求转化为结构化、可执行的任务描述，返回中文
+- ：如果需求不清晰，调用 `/superpowers:brainstorm` 补充混淆需求
+- 降级：手工模板增强（见附录 A）
 ---
 
 ### 1.2 全量上下文检索（生成前强制执行）
-- 首选：`mcp__contextweaver__codebase-retrieval` 获取相关代码上下文检索
+- 首选：`mcp__ace-tool__search_context` 获取相关代码上下文检索
 - 降级：`Grep + Glob` 组合检索（语义检索 Where / What / How）
 必须补齐以下上下文：
 1. 目标类/函数/变量的**完整定义与签名**
@@ -187,8 +190,8 @@ EOF
 
 ## ✅ 10. 最小执行清单（每轮必检）
 
-- [ ] 已执行 enhance-prompt（或等价降级）
-- [ ] 已执行 codebase-retrieval（或 Grep+Glob）
+- [ ] 已执行 enhance_prompt（或等价降级）
+- [ ] 已执行 search_context（或 Grep+Glob）
 - [ ] 上下文完整性检查通过
 - [ ] 需求边界无歧义（若有已提问）
 - [ ] 已完成模型路由与并行任务
